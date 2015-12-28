@@ -68,7 +68,17 @@ func (sm *SessionManager) Output(cmd string) ([]byte, error) {
 func (sm *SessionManager) initSession() (*ssh.Session, error) {
 	session, err := sm.sshClient.NewSession()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create session: %s", err)
+		// Redial, tcp connection closed
+		sm.sshClient, err = sm.initClient()
+		if err != nil {
+			// Redialing failed, reaching host failed
+			return nil, fmt.Errorf("Failed to create session: %s", err)
+		}
+	}
+	session, err = sm.sshClient.NewSession()
+	if err != nil {
+		// For some odd reason, couldn't establish a session again
+		return nil, fmt.Errorf("Failed to create session again: %s", err)
 	}
 
 	modes := ssh.TerminalModes{
@@ -76,6 +86,7 @@ func (sm *SessionManager) initSession() (*ssh.Session, error) {
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
+
 	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
 		session.Close()
 		return nil, fmt.Errorf("Request for pseudo terminal failed: %s", err)
