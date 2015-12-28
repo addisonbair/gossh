@@ -56,12 +56,12 @@ type SessionManager struct {
 // Creates and closes a new session while returning output
 func (sm *SessionManager) Output(cmd string) ([]byte, error) {
 	session, err := sm.initSession()
+	defer session.Close()
 	if err != nil {
 		return nil,
 			fmt.Errorf("Could not establish a session with server: %s", err)
 	}
 	output, err := session.Output(cmd)
-	session.Close()
 	return output, nil
 }
 
