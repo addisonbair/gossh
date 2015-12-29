@@ -68,18 +68,18 @@ func (sm *SessionManager) Output(cmd string) ([]byte, error) {
 func (sm *SessionManager) initSession() (*ssh.Session, error) {
 	session, err := sm.sshClient.NewSession()
 	if err != nil {
-		// Redial, tcp connection closed
-		sm.sshClient, err = sm.initClient()
-		if err != nil {
-			// Redialing failed, reaching host failed
-			return nil, fmt.Errorf("Failed to create session: %s", err)
-		}
+		// Close client and redial, tcp connection is closed
+		//sm.sshClient, err = sm.initClient()
+		//if err != nil {
+		// Redialing failed, reaching host failed
+		return nil, fmt.Errorf("Failed to create session: %s", err)
+		//}
 	}
-	session, err = sm.sshClient.NewSession()
-	if err != nil {
-		// For some odd reason, couldn't establish a session again
-		return nil, fmt.Errorf("Failed to create session again: %s", err)
-	}
+	//session, err = sm.sshClient.NewSession()
+	//if err != nil {
+	// For some odd reason, couldn't establish a session again
+	// return nil, fmt.Errorf("Failed to create session again: %s", err)
+	//}
 
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          0,     // disable echoing
